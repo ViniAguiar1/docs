@@ -27,14 +27,14 @@ costuma bastar.
 <CodeGroup>
 
 ```bash cURL
-curl -X POST https://pulsemetric-five.vercel.app/api/v1/activity \
+curl -X POST https://usekeep.dev/api/v1/activity \
   -H "Authorization: Bearer kp_live_..." \
   -H "Content-Type: application/json" \
   -d '{"stripeCustomerId":"cus_ABC","email":"cliente@empresa.com"}'
 ```
 
 ```ts Node
-await fetch("https://pulsemetric-five.vercel.app/api/v1/activity", {
+await fetch("https://usekeep.dev/api/v1/activity", {
   method: "POST",
   headers: {
     Authorization: `Bearer ${process.env.KEEP_API_KEY}`,
@@ -51,7 +51,7 @@ await fetch("https://pulsemetric-five.vercel.app/api/v1/activity", {
 import os, requests
 
 requests.post(
-    "https://pulsemetric-five.vercel.app/api/v1/activity",
+    "https://usekeep.dev/api/v1/activity",
     headers={"Authorization": f"Bearer {os.environ['KEEP_API_KEY']}"},
     json={"stripeCustomerId": account.stripe_customer_id, "email": user.email},
 )

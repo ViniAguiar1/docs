@@ -39,7 +39,7 @@
     "primary": {
       "type": "button",
       "label": "Entrar no beta",
-      "href": "https://pulsemetric-five.vercel.app/login"
+      "href": "https://usekeep.dev/login"
     }
   },
   "contextual": {
