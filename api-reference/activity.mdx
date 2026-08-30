@@ -1,0 +1,68 @@
+---
+title: "POST /v1/activity"
+description: "Envia atividade do seu produto para o Keep."
+---
+
+## Autenticação
+
+`Authorization: Bearer kp_live_...`, com uma chave gerada em **Chaves de API**.
+Chave inválida ou revogada devolve `401` sem dizer qual dos dois — informar a
+diferença confirmaria a existência de uma chave para quem tem a errada.
+
+## Corpo
+
+Aceita um objeto ou um array de até **500** eventos.
+
+<ParamField body="stripeCustomerId" type="string">
+  O id do cliente no Stripe. Preferido: é o que torna o casamento exato.
+</ParamField>
+
+<ParamField body="email" type="string">
+  E-mail do usuário. Usado como chave quando não há `stripeCustomerId`, e como
+  rótulo humano no alerta quando há.
+</ParamField>
+
+<ParamField body="at" type="string">
+  ISO 8601. Assume agora quando ausente. Recusado se estiver no futuro além de
+  cinco minutos, ou mais de 90 dias no passado.
+</ParamField>
+
+<ParamField body="eventId" type="string">
+  Opcional, para você deduplicar do seu lado. Não é exigido.
+</ParamField>
+
+<Note>
+  É preciso pelo menos um entre `stripeCustomerId` e `email`. Sem identificador
+  não há o que casar, e o evento é descartado.
+</Note>
+
+## Resposta
+
+```json
+{ "ok": true, "accepted": 12, "skipped": 1, "days": 3 }
+```
+
+`accepted` conta eventos aproveitados, `skipped` os descartados por falta de
+identificador ou data fora da janela, e `days` quantas linhas de contador foram
+tocadas. Um item inválido não derruba o lote.
+
+## O que acontece com o que você manda
+
+Não guardamos o evento. O que chega é somado num **contador por conta e por
+dia**, e é esse número que comparamos semana a semana.
+
+Não recebemos conteúdo, telas visitadas, endereço de IP nem identificador de
+navegador — a chamada parte do seu servidor, não do navegador dos seus usuários.
+
+<Note>
+  Reenvio conta duas vezes, e tudo bem: o limiar de queda compara duas semanas
+  entre si, então excesso uniforme se cancela na razão.
+</Note>
+
+## Erros
+
+| Código | Quando |
+| --- | --- |
+| `401` | Chave ausente, malformada, inválida ou revogada |
+| `400` | JSON inválido, corpo vazio, lote acima de 500, ou nenhum evento aproveitável |
+| `500` | Falha nossa ao gravar. Vale repetir — um `4xx` não vale |

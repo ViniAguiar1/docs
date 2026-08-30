@@ -1,47 +1,74 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Primeiros passos"
+description: "Do zero ao primeiro alerta: conectar o Stripe, gerar a chave e mandar atividade."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+## 1. Conecte o Stripe
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+Em **Integrações**, conecte por OAuth. O acesso é somente leitura: o Keep nunca
+cria, altera nem cancela cobrança, e nenhum token seu é armazenado — as chamadas
+usam a chave de plataforma com um cabeçalho identificando a sua conta.
 
-## Prerequisites
+## 2. Gere uma chave de API
 
-Before you begin, you must have:
+Em **Chaves de API**, clique em **Nova chave** e dê um nome que você reconheça
+daqui a seis meses. É por ele que você vai decidir qual revogar.
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+<Warning>
+  O segredo aparece uma única vez. Guardamos apenas o hash, então nem nós
+  conseguimos mostrá-lo depois. Se perder, gere outro e revogue o anterior.
+</Warning>
 
-## Get started
+## 3. Mande atividade
 
-<Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+Uma chamada do seu backend, onde você já sabe quem é o usuário. Uma por login
+costuma bastar.
 
-    ```bash
-    npm install your-package
-    ```
-  </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+<CodeGroup>
 
-    ```bash
-    your-cli init
-    ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+```bash cURL
+curl -X POST https://pulsemetric-five.vercel.app/api/v1/activity \
+  -H "Authorization: Bearer kp_live_..." \
+  -H "Content-Type: application/json" \
+  -d '{"stripeCustomerId":"cus_ABC","email":"cliente@empresa.com"}'
+```
 
-    ```bash
-    your-cli start
-    ```
-  </Step>
-</Steps>
+```ts Node
+await fetch("https://pulsemetric-five.vercel.app/api/v1/activity", {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${process.env.KEEP_API_KEY}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    stripeCustomerId: account.stripeCustomerId,
+    email: user.email,
+  }),
+});
+```
+
+```python Python
+import os, requests
+
+requests.post(
+    "https://pulsemetric-five.vercel.app/api/v1/activity",
+    headers={"Authorization": f"Bearer {os.environ['KEEP_API_KEY']}"},
+    json={"stripeCustomerId": account.stripe_customer_id, "email": user.email},
+)
+```
+
+</CodeGroup>
 
 <Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
-
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+  Mandar o `stripeCustomerId` é o que faz o casamento ser exato: o mesmo id
+  chega do outro lado, vindo do próprio Stripe. Só com e-mail, vale a heurística
+  de domínio — que falha justamente quando quem paga não é quem usa.
 </Tip>
+
+## 4. Espere duas semanas
+
+O Keep compara os últimos 7 dias contra os 7 anteriores. Antes de existirem duas
+janelas, não há o que comparar.
+
+Se você quiser resultado imediato, mande um backfill: o endpoint aceita um array
+de até 500 eventos por chamada, com `at` no passado.
