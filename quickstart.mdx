@@ -1,13 +1,21 @@
 ---
 title: "Primeiros passos"
-description: "Do zero ao primeiro alerta: conectar o Stripe, gerar a chave e mandar atividade."
+description: "Do zero ao primeiro alerta: conectar a receita, gerar a chave e mandar atividade."
 ---
 
-## 1. Conecte o Stripe
+## 1. Conecte a sua receita
 
-Em **Integrações**, conecte por OAuth. O acesso é somente leitura: o Keep nunca
-cria, altera nem cancela cobrança, e nenhum token seu é armazenado — as chamadas
-usam a chave de plataforma com um cabeçalho identificando a sua conta.
+Em **Integrações**, escolha por onde você cobra. As duas podem conviver, e quem
+cobra pelas duas vê um MRR só.
+
+**Stripe** conecta por OAuth. Nenhum token seu é armazenado: as chamadas usam a
+chave de plataforma com um cabeçalho identificando a sua conta.
+
+**AbacatePay** conecta colando uma chave de API. Gere uma **somente leitura** —
+a mesma chave que lê é a que cobra, e o Keep não precisa desse acesso.
+
+Nos dois casos o acesso é de leitura: o Keep nunca cria, altera nem cancela
+cobrança.
 
 ## 2. Gere uma chave de API
 
@@ -30,7 +38,7 @@ costuma bastar.
 curl -X POST https://usekeep.dev/api/v1/activity \
   -H "Authorization: Bearer kp_live_..." \
   -H "Content-Type: application/json" \
-  -d '{"stripeCustomerId":"cus_ABC","email":"cliente@empresa.com"}'
+  -d '{"customerId":"cus_ABC","email":"cliente@empresa.com"}'
 ```
 
 ```ts Node
@@ -53,16 +61,16 @@ import os, requests
 requests.post(
     "https://usekeep.dev/api/v1/activity",
     headers={"Authorization": f"Bearer {os.environ['KEEP_API_KEY']}"},
-    json={"stripeCustomerId": account.stripe_customer_id, "email": user.email},
+    json={"customerId": account.billing_customer_id, "email": user.email},
 )
 ```
 
 </CodeGroup>
 
 <Tip>
-  Mandar o `stripeCustomerId` é o que faz o casamento ser exato: o mesmo id
-  chega do outro lado, vindo do próprio Stripe. Só com e-mail, vale a heurística
-  de domínio — que falha justamente quando quem paga não é quem usa.
+  Mandar o `customerId` é o que faz o casamento ser exato: o mesmo id chega do
+  outro lado, vindo da sua própria cobrança. Só com e-mail, vale a heurística de
+  domínio — que falha justamente quando quem paga não é quem usa.
 </Tip>
 
 ## 4. Espere duas semanas

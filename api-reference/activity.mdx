@@ -13,13 +13,20 @@ diferença confirmaria a existência de uma chave para quem tem a errada.
 
 Aceita um objeto ou um array de até **500** eventos.
 
-<ParamField body="stripeCustomerId" type="string">
-  O id do cliente no Stripe. Preferido: é o que torna o casamento exato.
+<ParamField body="customerId" type="string">
+  O id do cliente na sua cobrança — `cus_...` no Stripe, `cust_...` no
+  AbacatePay. Preferido: é o que torna o casamento exato.
+</ParamField>
+
+<ParamField body="stripeCustomerId" type="string" deprecated>
+  O nome anterior do mesmo campo, de quando só existia Stripe. Continua
+  funcionando e vai continuar: quebrar quem já integrou custaria mais que o
+  nome errado. Quando os dois vierem, `customerId` vence.
 </ParamField>
 
 <ParamField body="email" type="string">
-  E-mail do usuário. Usado como chave quando não há `stripeCustomerId`, e como
-  rótulo humano no alerta quando há.
+  E-mail do usuário. Usado como chave quando não há `customerId`, e como rótulo
+  humano no alerta quando há.
 </ParamField>
 
 <ParamField body="at" type="string">
@@ -32,8 +39,8 @@ Aceita um objeto ou um array de até **500** eventos.
 </ParamField>
 
 <Note>
-  É preciso pelo menos um entre `stripeCustomerId` e `email`. Sem identificador
-  não há o que casar, e o evento é descartado.
+  É preciso pelo menos um entre `customerId` e `email`. Sem identificador não há
+  o que casar, e o evento é descartado.
 </Note>
 
 ## Resposta
