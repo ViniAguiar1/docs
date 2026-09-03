@@ -11,7 +11,7 @@ pagantes pararam de aparecer, e manda o aviso no Slack.
 
 ## De onde vem a receita
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Stripe" icon="credit-card">
     OAuth do Stripe Connect, somente leitura. Traz MRR, assinaturas e mudanças
     de plano.
@@ -20,9 +20,13 @@ pagantes pararam de aparecer, e manda o aviso no Slack.
     Uma chave somente leitura, colada em **Integrações**. Assinaturas por cartão
     ou Pix entram no mesmo MRR e na mesma lista de risco.
   </Card>
+  <Card title="Asaas" icon="building-columns">
+    Uma chave somente leitura, colada em **Integrações**. Boleto, Pix ou cartão
+    — as assinaturas entram no mesmo MRR e na mesma lista de risco.
+  </Card>
 </CardGroup>
 
-As duas somam. Quem cobra pelos dois vê um MRR só.
+As três somam. Quem cobra por mais de uma vê um MRR só.
 
 ## A ordem importa mais que o sinal
 

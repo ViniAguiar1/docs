@@ -5,8 +5,8 @@ description: "Do zero ao primeiro alerta: conectar a receita, gerar a chave e ma
 
 ## 1. Conecte a sua receita
 
-Em **Integrações**, escolha por onde você cobra. As duas podem conviver, e quem
-cobra pelas duas vê um MRR só.
+Em **Integrações**, escolha por onde você cobra. As origens convivem, e quem
+cobra por mais de uma vê um MRR só.
 
 **Stripe** conecta por OAuth. Nenhum token seu é armazenado: as chamadas usam a
 chave de plataforma com um cabeçalho identificando a sua conta.
@@ -14,7 +14,10 @@ chave de plataforma com um cabeçalho identificando a sua conta.
 **AbacatePay** conecta colando uma chave de API. Gere uma **somente leitura** —
 a mesma chave que lê é a que cobra, e o Keep não precisa desse acesso.
 
-Nos dois casos o acesso é de leitura: o Keep nunca cria, altera nem cancela
+**Asaas** conecta colando uma chave de API **somente leitura**, como o
+AbacatePay. O Keep detecta sozinho se a chave é de produção ou de sandbox.
+
+Em todos os casos o acesso é de leitura: o Keep nunca cria, altera nem cancela
 cobrança.
 
 ## 2. Gere uma chave de API
