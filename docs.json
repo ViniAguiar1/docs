@@ -20,7 +20,8 @@
       {
         "group": "Referência",
         "pages": [
-          "api-reference/activity"
+          "api-reference/activity",
+          "webhooks"
         ]
       }
     ]

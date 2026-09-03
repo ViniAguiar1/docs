@@ -1,0 +1,149 @@
+---
+title: "Webhooks"
+description: "Como o Keep recebe eventos de cobrança na hora — e o que cada gateway pede pra configurar."
+---
+
+O Keep puxa a sua receita: de tempos em tempos ele relê o Stripe, o AbacatePay e
+o Asaas e atualiza os números. Funciona sem mais nada. Mas três coisas não
+deviam esperar a próxima leitura:
+
+- uma **cobrança que falhou**,
+- uma **assinatura que caiu**,
+- um **plano que encolheu**.
+
+Webhook é o empurrão que torna isso instantâneo. Quando o gateway avisa, o Keep
+atualiza o número na hora e — quando é um problema de pagamento — manda o alerta
+no mesmo minuto, em vez de esperar o próximo ciclo de leitura.
+
+<Note>
+  Webhook não é obrigatório: a releitura periódica pega tudo de qualquer jeito.
+  Ele só encurta o intervalo entre "o cliente cancelou" e "você soube" — de horas
+  para segundos. No Stripe ele já vem ligado; no AbacatePay e no Asaas, é você
+  que liga.
+</Note>
+
+## Cada gateway liga de um jeito
+
+A forma de conectar o webhook muda com a origem, porque o modelo de segurança de
+cada uma é diferente. Um pede zero trabalho; os outros dois pedem que você cole
+uma URL.
+
+<CardGroup cols={3}>
+  <Card title="Stripe" icon="credit-card">
+    Nada a fazer. O OAuth já liga tudo.
+  </Card>
+  <Card title="AbacatePay" icon="brazilian-real-sign">
+    Cole a URL no painel de webhooks.
+  </Card>
+  <Card title="Asaas" icon="building-columns">
+    Cole a URL e o token — ou um clique.
+  </Card>
+</CardGroup>
+
+## Stripe — nada a configurar
+
+O Stripe conecta por OAuth (Connect). Um único endpoint do Keep recebe os
+eventos de **todas** as contas conectadas, e cada entrega diz de qual conta veio.
+Você não cria webhook nenhum: assim que conecta, os eventos já chegam.
+
+Cada entrega vem **assinada** (cabeçalho `stripe-signature`), e o Keep confere a
+assinatura sobre o corpo cru antes de ler qualquer coisa. Assinatura inválida é
+recusada e nunca vira número.
+
+O que o Stripe empurra: cancelamento, mudança de plano (pra cima ou pra baixo),
+cobrança que falhou, trial que terminou sem cartão, e a própria desconexão da
+conta. Falha de pagamento, fim de trial, cancelamento e mudança de plano viram
+alerta na hora — respeitando o que você silenciou em **Preferências** — e todos
+atualizam MRR, assinaturas e o gráfico de movimento.
+
+## AbacatePay — cole a URL
+
+O AbacatePay não tem OAuth, então o webhook é por conexão: o Keep gera **um
+endereço só seu**, com um segredo embutido, e você cola no painel de webhooks do
+AbacatePay.
+
+<Steps>
+  <Step title="Copie a URL em Integrações">
+    No card do AbacatePay, em **Integrações**, o Keep mostra a URL do seu
+    webhook — algo como
+    `https://usekeep.dev/api/abacatepay/webhook/…?webhookSecret=…`. O segredo faz
+    parte da URL; trate a URL inteira como segredo.
+  </Step>
+  <Step title="Cole no painel do AbacatePay">
+    Em webhooks, no painel do AbacatePay, cole a URL. Não precisa configurar mais
+    nada — a autenticação viaja na própria URL.
+  </Step>
+</Steps>
+
+O Keep aceita os formatos de assinatura que o AbacatePay usa de verdade
+(Standard Webhooks, no cabeçalho `webhook-signature`) além do segredo na URL —
+qualquer um autentica, e é conferido em tempo constante antes de qualquer
+processamento.
+
+O que o AbacatePay empurra: assinatura ativada, assinatura cancelada, e cobrança
+que falhou. A falha de pagamento vira alerta na hora; o nascimento e a morte da
+assinatura atualizam os números e o gráfico de movimento.
+
+## Asaas — cole a URL e o token
+
+O Asaas também é por conexão, com uma diferença que importa: **o Asaas não
+assina os webhooks.** Ele reenvia, num cabeçalho, um token que o receptor
+configura. Então o Keep gera esse token, e você o cola junto com a URL.
+
+<Steps>
+  <Step title="Deixe o Keep registrar sozinho">
+    No card do Asaas, em **Integrações**, há um botão que registra o webhook por
+    você, via API do Asaas — cria o endereço, cola o token e marca os eventos
+    certos. É o caminho recomendado: um clique e acabou.
+  </Step>
+  <Step title="Ou configure à mão">
+    Se preferir, copie a URL (`https://usekeep.dev/api/asaas/webhook/…`) e o token
+    que o Keep mostra, e cole os dois no painel de webhooks do Asaas — a URL no
+    endereço, o token no campo de *token de autenticação*.
+  </Step>
+</Steps>
+
+<Warning>
+  Sem o token, as entregas chegam sem prova de origem e o Keep as recusa com
+  `401`. Se o webhook do Asaas aparecer entregando e falhando, quase sempre é o
+  token que ficou de fora — foi por isso que o registro por um clique existe.
+</Warning>
+
+O token é comparado em tempo constante, antes de qualquer processamento. O que o
+Asaas empurra: assinatura criada, assinatura inativada ou apagada, e cobrança
+vencida (`PAYMENT_OVERDUE`). A vencida vira alerta na hora; as de assinatura
+atualizam os números, o gráfico de movimento e a **taxa de cancelamento** — é o
+que traz o churn do Asaas para a conta.
+
+## Como o Keep protege a entrada
+
+| | Stripe | AbacatePay | Asaas |
+| --- | --- | --- | --- |
+| Liga por | OAuth (Connect) | URL colada | URL + token, ou um clique |
+| Endpoint | um, compartilhado | um por conexão | um por conexão |
+| Prova de origem | assinatura HMAC | assinatura ou segredo na URL | token no cabeçalho |
+| Você configura | nada | a URL | a URL e o token |
+
+Em todos, o corpo é lido **cru** (a prova de origem é sobre os bytes exatos), e o
+que autentica é conferido **antes** de qualquer processamento. Nenhum segredo
+aparece em log nem na resposta.
+
+## Reenvio é seguro
+
+Os gateways entregam **pelo menos uma vez** — o mesmo evento pode chegar duas. O
+Keep foi feito pra isso:
+
+- Uma mudança de receita é gravada por identidade do evento, então uma reentrega
+  não conta o mesmo cancelamento duas vezes nem dobra o churn.
+- Um alerta é reivindicado antes de sair, então o Slack não recebe a mesma
+  mensagem repetida.
+- Um evento que o Keep decide ignorar responde `200`, para o gateway parar de
+  reenviá-lo. Só uma falha real nossa responde `500`, que é o que merece nova
+  tentativa.
+
+<Tip>
+  Todo gateway guarda um **histórico de entregas** no próprio painel — com o
+  corpo enviado e a resposta recebida. É o primeiro lugar pra olhar quando um
+  evento não aparece no Keep: se lá está `200`, chegou; se está `401`, é
+  autenticação (segredo ou token).
+</Tip>
