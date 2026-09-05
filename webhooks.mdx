@@ -1,0 +1,148 @@
+---
+title: "Webhooks"
+description: "How Keep receives billing events in real time — and what each gateway needs to set up."
+---
+
+Keep pulls your revenue: every so often it re-reads Stripe, AbacatePay, and
+Asaas and updates the numbers. It works with nothing else. But three things
+should not wait for the next read:
+
+- a **failed charge**,
+- a **subscription that dropped**,
+- a **plan that shrank**.
+
+A webhook is the push that makes this instant. When the gateway tells us, Keep
+updates the number right away and — when it is a payment problem — sends the
+alert the same minute, instead of waiting for the next read cycle.
+
+<Note>
+  Webhooks are not required: the periodic re-read catches everything anyway.
+  They only shorten the gap between "the customer canceled" and "you found out"
+  — from hours to seconds. On Stripe it is already on; on AbacatePay and Asaas,
+  you turn it on.
+</Note>
+
+## Each gateway connects differently
+
+How you wire the webhook changes with the source, because each one's security
+model is different. One asks for zero work; the other two ask you to paste a URL.
+
+<CardGroup cols={3}>
+  <Card title="Stripe" icon="credit-card">
+    Nothing to do. OAuth wires it all.
+  </Card>
+  <Card title="AbacatePay" icon="brazilian-real-sign">
+    Paste the URL in the webhooks panel.
+  </Card>
+  <Card title="Asaas" icon="building-columns">
+    Paste the URL and the token — or one click.
+  </Card>
+</CardGroup>
+
+## Stripe — nothing to set up
+
+Stripe connects over OAuth (Connect). A single Keep endpoint receives events
+from **every** connected account, and each delivery says which account it came
+from. You create no webhook: the moment you connect, the events already arrive.
+
+Each delivery comes **signed** (the `stripe-signature` header), and Keep
+verifies the signature over the raw body before reading anything. An invalid
+signature is rejected and never becomes a number.
+
+What Stripe pushes: cancellation, plan change (up or down), a failed charge, a
+trial that ended without a card, and the account disconnecting itself. Failed
+payment, trial end, cancellation, and plan change turn into an instant alert —
+respecting whatever you muted in **Preferences** — and all of them update MRR,
+subscriptions, and the movement chart.
+
+## AbacatePay — paste the URL
+
+AbacatePay has no OAuth, so the webhook is per connection: Keep generates **an
+address that is yours alone**, with an embedded secret, and you paste it into
+AbacatePay's webhooks panel.
+
+<Steps>
+  <Step title="Copy the URL in Integrations">
+    In the AbacatePay card, under **Integrations**, Keep shows your webhook URL
+    — something like `https://usekeep.dev/api/abacatepay/webhook/…?webhookSecret=…`.
+    The secret is part of the URL; treat the whole URL as a secret.
+  </Step>
+  <Step title="Paste it in AbacatePay's panel">
+    Under webhooks, in AbacatePay's panel, paste the URL. Nothing else to
+    configure — the authentication travels in the URL itself.
+  </Step>
+</Steps>
+
+Keep accepts the signature formats AbacatePay actually uses (Standard Webhooks,
+in the `webhook-signature` header) on top of the secret in the URL — either one
+authenticates, and it is checked in constant time before any processing.
+
+What AbacatePay pushes: subscription activated, subscription canceled, and a
+failed charge. The failed payment turns into an instant alert; the birth and
+death of a subscription update the numbers and the movement chart.
+
+## Asaas — paste the URL and the token
+
+Asaas is also per connection, with a difference that matters: **Asaas does not
+sign its webhooks.** It sends back, in a header, a token the receiver
+configures. So Keep generates that token, and you paste it alongside the URL.
+
+<Steps>
+  <Step title="Let Keep register it for you">
+    In the Asaas card, under **Integrations**, there is a button that registers
+    the webhook for you, via the Asaas API — it creates the address, sets the
+    token, and marks the right events. It is the recommended path: one click and
+    done.
+  </Step>
+  <Step title="Or set it up by hand">
+    If you would rather, copy the URL (`https://usekeep.dev/api/asaas/webhook/…`)
+    and the token Keep shows, and paste both into Asaas's webhooks panel — the
+    URL as the address, the token in the *authentication token* field.
+  </Step>
+</Steps>
+
+<Warning>
+  Without the token, deliveries arrive with no proof of origin and Keep rejects
+  them with `401`. If the Asaas webhook shows up delivering and failing, it is
+  almost always the token left out — that is why the one-click registration
+  exists.
+</Warning>
+
+The token is compared in constant time, before any processing. What Asaas
+pushes: subscription created, subscription inactivated or deleted, and an
+overdue charge (`PAYMENT_OVERDUE`). The overdue one turns into an instant alert;
+the subscription ones update the numbers, the movement chart, and the **churn
+rate** — it is what brings Asaas churn into the count.
+
+## How Keep guards the door
+
+| | Stripe | AbacatePay | Asaas |
+| --- | --- | --- | --- |
+| Connects via | OAuth (Connect) | Pasted URL | URL + token, or one click |
+| Endpoint | one, shared | one per connection | one per connection |
+| Proof of origin | HMAC signature | signature or secret in URL | token in header |
+| You configure | nothing | the URL | the URL and the token |
+
+In all of them, the body is read **raw** (the proof of origin is over the exact
+bytes), and what authenticates is checked **before** any processing. No secret
+appears in a log or in the response.
+
+## Redelivery is safe
+
+Gateways deliver **at least once** — the same event can arrive twice. Keep was
+built for it:
+
+- A revenue change is recorded by event identity, so a redelivery does not count
+  the same cancellation twice or double the churn.
+- An alert is claimed before it goes out, so Slack does not get the same message
+  again.
+- An event Keep decides to ignore returns `200`, so the gateway stops resending
+  it. Only a real failure on our side returns `500`, which is what deserves a
+  retry.
+
+<Tip>
+  Every gateway keeps a **delivery history** in its own panel — with the body it
+  sent and the response it got. It is the first place to look when an event does
+  not show up in Keep: if it says `200` there, it arrived; if `401`, it is
+  authentication (secret or token).
+</Tip>

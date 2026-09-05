@@ -1,10 +1,9 @@
-# Documentação do Keep
+# Keep documentation
 
-Publicada em <https://usekeep.mintlify.app> pelo Mintlify, a cada push na `main`.
+Published at <https://usekeep.mintlify.app> by Mintlify, on every push to `main`.
 
-- `index.mdx` — o que o produto é, e por que ordena por receita em jogo
-- `quickstart.mdx` — conectar o Stripe, gerar chave, mandar atividade
-- `api-reference/activity.mdx` — o endpoint de ingestão
-- `docs.json` — navegação, cores e o botão da barra superior
-
-Para rodar local: `npx mint dev`.
+- `index.mdx` — what the product is, and why it orders by money at stake
+- `quickstart.mdx` — connect Stripe, generate a key, send activity
+- `api-reference/activity.mdx` — the ingestion endpoint
+- `webhooks.mdx` — how Keep receives billing events from Stripe, AbacatePay, and Asaas
+- `docs.json` — navigation, colors, and the top-bar button
