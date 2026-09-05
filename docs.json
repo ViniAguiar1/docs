@@ -11,16 +11,17 @@
   "navigation": {
     "pages": [
       {
-        "group": "Começando",
+        "group": "Getting started",
         "pages": [
           "index",
           "quickstart"
         ]
       },
       {
-        "group": "Referência",
+        "group": "Reference",
         "pages": [
-          "api-reference/activity"
+          "api-reference/activity",
+          "webhooks"
         ]
       }
     ]
@@ -32,13 +33,13 @@
   "navbar": {
     "links": [
       {
-        "label": "Falar com a gente",
-        "href": "mailto:pulsemetric7@gmail.com"
+        "label": "Talk to us",
+        "href": "mailto:vinicius@usekeep.dev"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Começar",
+      "label": "Get started",
       "href": "https://usekeep.dev/login"
     }
   },

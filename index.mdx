@@ -1,56 +1,59 @@
 ---
-title: "O que é o Keep"
-description: "Cruza a sua receita recorrente com o uso do produto e avisa no Slack quem está saindo, ordenado por quanto dinheiro está em jogo."
+title: "What Keep is"
+description: "Crosses your recurring revenue with product usage and pings you on Slack about who is leaving, ordered by how much money is at stake."
 ---
 
-Churn é decidido semanas antes de você ficar sabendo. Quando o e-mail de
-cancelamento chega, a decisão já foi tomada e a conversa aconteceu sem você.
+Churn is decided weeks before you find out. By the time the cancellation email
+lands, the decision was made and the conversation happened without you.
 
-O Keep conecta a sua cobrança ao seu uso de produto, mostra quais contas
-pagantes pararam de aparecer, e manda o aviso no Slack.
+Keep connects your billing to your product usage, shows which paying accounts
+have stopped showing up, and sends the alert on Slack.
 
-## De onde vem a receita
+## Where the revenue comes from
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Stripe" icon="credit-card">
-    OAuth do Stripe Connect, somente leitura. Traz MRR, assinaturas e mudanças
-    de plano.
+    Stripe Connect OAuth, read-only. Brings MRR, subscriptions, and plan
+    changes.
   </Card>
   <Card title="AbacatePay" icon="brazilian-real-sign">
-    Uma chave somente leitura, colada em **Integrações**. Assinaturas por cartão
-    ou Pix entram no mesmo MRR e na mesma lista de risco.
+    A read-only key, pasted in **Integrations**. Card or Pix subscriptions land
+    in the same MRR and the same risk list.
+  </Card>
+  <Card title="Asaas" icon="building-columns">
+    A read-only key, pasted in **Integrations**. Boleto, Pix, or card — the
+    subscriptions land in the same MRR and the same risk list.
   </Card>
 </CardGroup>
 
-As duas somam. Quem cobra pelos dois vê um MRR só.
+All three add up. Whoever charges through more than one sees a single MRR.
 
-## A ordem importa mais que o sinal
+## Order matters more than the signal
 
-A lista vem ordenada por **quanto dinheiro está em jogo**, não por quem caiu mais.
+The list comes ordered by **how much money is at stake**, not by who dropped the most.
 
-Uma queda de 90% numa conta de R$ 90 pode esperar. Uma queda de 40% numa conta
-de R$ 4.200 não pode. Praticamente toda ferramenta de churn ordena por gravidade
-do sinal, o que fica bonito no gráfico e é inútil numa segunda de manhã, quando
-você tem tempo de ligar para três pessoas e precisa saber quais três.
+A 90% drop on a R$90 account can wait. A 40% drop on a R$4,200 account cannot.
+Nearly every churn tool orders by signal severity, which looks good on a chart
+and is useless on a Monday morning, when you have time to call three people and
+need to know which three.
 
-## De onde vem o uso
+## Where the usage comes from
 
-Duas fontes, e elas somam.
+Two sources, and they add up.
 
 <CardGroup cols={2}>
   <Card title="PostHog" icon="chart-line">
-    Conecta por OAuth, somente leitura. O Keep casa cada cliente pelo e-mail.
+    Connects over OAuth, read-only. Keep matches each customer by email.
   </Card>
-  <Card title="Ingestão própria" icon="code" href="/quickstart">
-    Uma chamada HTTP do seu backend. É a única forma em que o casamento é
-    exato, porque você manda o id do cliente em vez de deixar a gente adivinhar
-    pelo e-mail.
+  <Card title="Your own ingestion" icon="code" href="/quickstart">
+    One HTTP call from your backend. It is the only way the match is exact,
+    because you send the customer id instead of letting us guess by email.
   </Card>
 </CardGroup>
 
 <Note>
-  Em B2B quem paga a fatura raramente é quem usa o produto: a cobrança vai para
-  `financeiro@` e o acesso vem de outra pessoa. Por isso o casamento por e-mail
-  tem um teto, e por isso mandar o `customerId` muda a natureza do problema em
-  vez de melhorar a heurística.
+  In B2B, whoever pays the invoice is rarely who uses the product: billing goes
+  to `finance@` and access comes from someone else. That is why email matching
+  has a ceiling, and why sending the `customerId` changes the nature of the
+  problem instead of improving the heuristic.
 </Note>

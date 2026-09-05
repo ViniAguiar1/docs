@@ -1,75 +1,75 @@
 ---
 title: "POST /v1/activity"
-description: "Envia atividade do seu produto para o Keep."
+description: "Send your product's activity to Keep."
 ---
 
-## Autenticação
+## Authentication
 
-`Authorization: Bearer kp_live_...`, com uma chave gerada em **Chaves de API**.
-Chave inválida ou revogada devolve `401` sem dizer qual dos dois — informar a
-diferença confirmaria a existência de uma chave para quem tem a errada.
+`Authorization: Bearer kp_live_...`, with a key generated in **API keys**. An
+invalid or revoked key returns `401` without saying which — telling the
+difference would confirm a key existed to whoever has the wrong one.
 
-## Corpo
+## Body
 
-Aceita um objeto ou um array de até **500** eventos.
+Accepts an object or an array of up to **500** events.
 
 <ParamField body="customerId" type="string">
-  O id do cliente na sua cobrança — `cus_...` no Stripe, `cust_...` no
-  AbacatePay. Preferido: é o que torna o casamento exato.
+  The customer's id in your billing — `cus_...` on Stripe and Asaas, `cust_...`
+  on AbacatePay. Preferred: it is what makes the match exact.
 </ParamField>
 
 <ParamField body="stripeCustomerId" type="string" deprecated>
-  O nome anterior do mesmo campo, de quando só existia Stripe. Continua
-  funcionando e vai continuar: quebrar quem já integrou custaria mais que o
-  nome errado. Quando os dois vierem, `customerId` vence.
+  The old name for the same field, from when only Stripe existed. It still works
+  and will keep working: breaking whoever already integrated would cost more
+  than the wrong name. When both arrive, `customerId` wins.
 </ParamField>
 
 <ParamField body="email" type="string">
-  E-mail do usuário. Usado como chave quando não há `customerId`, e como rótulo
-  humano no alerta quando há.
+  The user's email. Used as the key when there is no `customerId`, and as a
+  human label in the alert when there is.
 </ParamField>
 
 <ParamField body="at" type="string">
-  ISO 8601. Assume agora quando ausente. Recusado se estiver no futuro além de
-  cinco minutos, ou mais de 90 dias no passado.
+  ISO 8601. Assumes now when absent. Rejected if it is more than five minutes in
+  the future, or more than 90 days in the past.
 </ParamField>
 
 <ParamField body="eventId" type="string">
-  Opcional, para você deduplicar do seu lado. Não é exigido.
+  Optional, for you to deduplicate on your side. Not required.
 </ParamField>
 
 <Note>
-  É preciso pelo menos um entre `customerId` e `email`. Sem identificador não há
-  o que casar, e o evento é descartado.
+  At least one of `customerId` and `email` is required. Without an identifier
+  there is nothing to match, and the event is discarded.
 </Note>
 
-## Resposta
+## Response
 
 ```json
 { "ok": true, "accepted": 12, "skipped": 1, "days": 3 }
 ```
 
-`accepted` conta eventos aproveitados, `skipped` os descartados por falta de
-identificador ou data fora da janela, e `days` quantas linhas de contador foram
-tocadas. Um item inválido não derruba o lote.
+`accepted` counts events used, `skipped` the ones discarded for a missing
+identifier or a date outside the window, and `days` how many counter rows were
+touched. One invalid item does not bring down the batch.
 
-## O que acontece com o que você manda
+## What happens to what you send
 
-Não guardamos o evento. O que chega é somado num **contador por conta e por
-dia**, e é esse número que comparamos semana a semana.
+We do not store the event. What arrives is summed into a **counter per account
+and per day**, and it is that number we compare week over week.
 
-Não recebemos conteúdo, telas visitadas, endereço de IP nem identificador de
-navegador — a chamada parte do seu servidor, não do navegador dos seus usuários.
+We do not receive content, screens visited, IP address, or any browser
+identifier — the call comes from your server, not from your users' browsers.
 
 <Note>
-  Reenvio conta duas vezes, e tudo bem: o limiar de queda compara duas semanas
-  entre si, então excesso uniforme se cancela na razão.
+  A resend counts twice, and that is fine: the drop threshold compares two weeks
+  against each other, so uniform excess cancels out in the ratio.
 </Note>
 
-## Erros
+## Errors
 
-| Código | Quando |
+| Code | When |
 | --- | --- |
-| `401` | Chave ausente, malformada, inválida ou revogada |
-| `400` | JSON inválido, corpo vazio, lote acima de 500, ou nenhum evento aproveitável |
-| `500` | Falha nossa ao gravar. Vale repetir — um `4xx` não vale |
+| `401` | Key missing, malformed, invalid, or revoked |
+| `400` | Invalid JSON, empty body, batch over 500, or no usable event |
+| `500` | Our failure to write. Worth retrying — a `4xx` is not |

@@ -1,36 +1,40 @@
 ---
-title: "Primeiros passos"
-description: "Do zero ao primeiro alerta: conectar a receita, gerar a chave e mandar atividade."
+title: "Getting started"
+description: "From zero to your first alert: connect revenue, generate a key, and send activity."
 ---
 
-## 1. Conecte a sua receita
+## 1. Connect your revenue
 
-Em **Integrações**, escolha por onde você cobra. As duas podem conviver, e quem
-cobra pelas duas vê um MRR só.
+In **Integrations**, choose where you charge. They can coexist, and whoever
+charges through more than one sees a single MRR.
 
-**Stripe** conecta por OAuth. Nenhum token seu é armazenado: as chamadas usam a
-chave de plataforma com um cabeçalho identificando a sua conta.
+**Stripe** connects over OAuth. None of your tokens are stored: calls use the
+platform key with a header identifying your account.
 
-**AbacatePay** conecta colando uma chave de API. Gere uma **somente leitura** —
-a mesma chave que lê é a que cobra, e o Keep não precisa desse acesso.
+**AbacatePay** connects by pasting an API key. Generate a **read-only** one —
+the same key that reads is the one that charges, and Keep does not need that
+access.
 
-Nos dois casos o acesso é de leitura: o Keep nunca cria, altera nem cancela
-cobrança.
+**Asaas** connects by pasting a **read-only** API key too, like AbacatePay. Keep
+detects on its own whether the key is production or sandbox.
 
-## 2. Gere uma chave de API
+In every case the access is read-only: Keep never creates, changes, or cancels
+a charge.
 
-Em **Chaves de API**, clique em **Nova chave** e dê um nome que você reconheça
-daqui a seis meses. É por ele que você vai decidir qual revogar.
+## 2. Generate an API key
+
+In **API keys**, click **New key** and give it a name you will recognize six
+months from now. It is how you will decide which one to revoke.
 
 <Warning>
-  O segredo aparece uma única vez. Guardamos apenas o hash, então nem nós
-  conseguimos mostrá-lo depois. Se perder, gere outro e revogue o anterior.
+  The secret appears only once. We store only the hash, so not even we can show
+  it to you later. If you lose it, generate another and revoke the old one.
 </Warning>
 
-## 3. Mande atividade
+## 3. Send activity
 
-Uma chamada do seu backend, onde você já sabe quem é o usuário. Uma por login
-costuma bastar.
+One call from your backend, where you already know who the user is. One per
+login usually does it.
 
 <CodeGroup>
 
@@ -38,7 +42,7 @@ costuma bastar.
 curl -X POST https://usekeep.dev/api/v1/activity \
   -H "Authorization: Bearer kp_live_..." \
   -H "Content-Type: application/json" \
-  -d '{"customerId":"cus_ABC","email":"cliente@empresa.com"}'
+  -d '{"customerId":"cus_ABC","email":"customer@company.com"}'
 ```
 
 ```ts Node
@@ -68,15 +72,16 @@ requests.post(
 </CodeGroup>
 
 <Tip>
-  Mandar o `customerId` é o que faz o casamento ser exato: o mesmo id chega do
-  outro lado, vindo da sua própria cobrança. Só com e-mail, vale a heurística de
-  domínio — que falha justamente quando quem paga não é quem usa.
+  Sending the `customerId` is what makes the match exact: the same id arrives
+  from the other side, from your own billing. With only an email, you are back
+  to the domain heuristic — which fails exactly when whoever pays is not who
+  uses.
 </Tip>
 
-## 4. Espere duas semanas
+## 4. Wait two weeks
 
-O Keep compara os últimos 7 dias contra os 7 anteriores. Antes de existirem duas
-janelas, não há o que comparar.
+Keep compares the last 7 days against the 7 before. Before two windows exist,
+there is nothing to compare.
 
-Se você quiser resultado imediato, mande um backfill: o endpoint aceita um array
-de até 500 eventos por chamada, com `at` no passado.
+If you want a result right away, send a backfill: the endpoint accepts an array
+of up to 500 events per call, with `at` in the past.
