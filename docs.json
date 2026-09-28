@@ -18,6 +18,12 @@
         ]
       },
       {
+        "group": "Workspace",
+        "pages": [
+          "workspace/team"
+        ]
+      },
+      {
         "group": "Feedback and updates",
         "pages": [
           "feedback/widget",
