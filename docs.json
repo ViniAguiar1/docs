@@ -18,9 +18,10 @@
         ]
       },
       {
-        "group": "Feedback",
+        "group": "Feedback and updates",
         "pages": [
-          "feedback/widget"
+          "feedback/widget",
+          "updates/whats-new"
         ]
       },
       {

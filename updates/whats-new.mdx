@@ -1,0 +1,122 @@
+---
+title: "What's new"
+description: "Announce new features and product changes inside your product, and see who viewed and who clicked — next to the account."
+---
+
+You write the update in Keep (**What's new**), publish it, and the panel shows
+up inside your app. Each view and each click on the update's button reaches
+Keep; when the person is matched to an account, Customer 360 shows it in the
+account's activity ("Saw “Introducing AI Workflows”").
+
+An update has a type (**New feature**, **Improvement**, **Announcement** or
+**Maintenance**), a title, a short text and, optionally, a button with a label
+and an `https` link. It moves from **draft** to **published** to **archived**;
+only published updates reach the panel.
+
+## Install
+
+It is the same `keep.js` as the surveys. If it is already installed, add your
+workspace's public key (`kpub_…`, in the **Install in your product** tab of
+**What's new**) and `updates: true` to `Keep.init`:
+
+```html
+<script>
+  (function(w){w.Keep=w.Keep||{q:[]};["init","identify","show","track","reset","showUpdates"].forEach(function(m){w.Keep[m]=w.Keep[m]||function(){w.Keep.q.push([m,arguments])}})})(window);
+</script>
+<script async src="https://usekeep.dev/sdk/v1/keep.js"></script>
+<script>
+  Keep.init({ key: "kpub_YOUR_KEY", updates: true });
+  Keep.identify({
+    userId: "user_123",
+    email: "ana@example.com",
+    companyId: "company_456",
+    plan: "pro",
+    signature: "HMAC_FROM_YOUR_SERVER"
+  });
+</script>
+```
+
+The key is public by design: it opens only this workspace's published
+updates — nothing about revenue, accounts or risk.
+
+## Opening the panel
+
+Any element with `data-keep-updates` opens the panel. While there are unread
+updates, it gets `data-keep-unread` with the count:
+
+```html
+<button type="button" data-keep-updates>What's new</button>
+```
+
+```css
+[data-keep-updates] { position: relative; }
+[data-keep-updates][data-keep-unread]::after {
+  content: attr(data-keep-unread);
+  position: absolute; top: -6px; right: -6px;
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px;
+  background: #e11d48; color: #fff; font: 600 11px/18px system-ui, sans-serif; text-align: center;
+}
+```
+
+Or from code:
+
+<ParamField path="Keep.showUpdates()" type="function">
+  Opens the panel from anywhere (a menu item, a shortcut…). Opening the panel
+  marks the listed updates as read.
+</ParamField>
+
+<ParamField path="keep:updates" type="event">
+  Fired on `window` whenever the list changes, with
+  `event.detail = { unread, total }` — for a badge you draw yourself.
+</ParamField>
+
+```js
+window.addEventListener("keep:updates", (event) => {
+  console.log(event.detail.unread, event.detail.total);
+});
+```
+
+## Audience
+
+Each update goes to **everyone**, to **identified users** only, or only to
+certain **plans** or **companies**. The audience is decided on Keep's server
+from what your app sends in `Keep.identify` (`plan`; `companyId` or
+`customerId`; `userId` or `email` for "identified"); the browser never
+receives the rule, only the updates that person may see. Identity signing
+(HMAC) is the same as for surveys — see
+[Verified identity](/feedback/widget#verified-identity).
+
+## Metrics
+
+For each update, Keep shows **unique views**, **unique clicks** and **CTR**
+(clicks ÷ views).
+
+- A view counts when the update is actually on screen, once per person.
+- A click counts when the person clicks the update's button, once per person.
+- "Person" is the `userId` (or `email`) your app passed; without an identity,
+  a random id kept in the browser.
+
+A click is a click: Keep does not report it as adoption of the feature.
+
+## What the widget receives and sends
+
+- It receives only the published updates that person may see: id, type,
+  title, text, button and date. Nothing about your accounts, revenue, risk or
+  audience.
+- It sends the public key, the identity you passed and, for events, the kind
+  (`view` or `click`) and the visitor id.
+- It draws inside a Shadow DOM and renders all text as text, never as HTML. It
+  uses no cookies; it keeps in `localStorage` how far the person has read.
+- Any failure is silent: your page stays as it was.
+
+## Endpoints
+
+Used by the widget; you do not need to call them.
+
+| Method | Path | Body | What for |
+| --- | --- | --- | --- |
+| `POST` | `/api/v1/updates` | `{ key, user? }` | The published updates this person may see, newest first. |
+| `POST` | `/api/v1/updates/:id/events` | `{ key, kind, visitorId, user? }` | One view or one click (`kind`: `view` or `click`), counted once per person. |
+
+Unknown key, an origin outside **Allowed sites**, or an update that is not
+published: `404`.
