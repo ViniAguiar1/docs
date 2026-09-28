@@ -28,7 +28,7 @@ Paste this in the pages where the survey may appear:
 
 ```html
 <script>
-  (function(w){w.Keep=w.Keep||{q:[]};["init","identify","show","track","reset"].forEach(function(m){w.Keep[m]=w.Keep[m]||function(){w.Keep.q.push([m,arguments])}})})(window);
+  (function(w){w.Keep=w.Keep||{q:[]};["init","identify","show","track","reset","showUpdates"].forEach(function(m){w.Keep[m]=w.Keep[m]||function(){w.Keep.q.push([m,arguments])}})})(window);
 </script>
 <script async src="https://usekeep.dev/sdk/v1/keep.js"></script>
 <script>
@@ -152,7 +152,7 @@ export function KeepFeedback({ user }: { user: { id: string; email: string; sign
     const w = window as any;
     if (!w.Keep) {
       w.Keep = { q: [] };
-      ["init", "identify", "show", "track", "reset"].forEach((m) => {
+      ["init", "identify", "show", "track", "reset", "showUpdates"].forEach((m) => {
         w.Keep[m] = (...args: unknown[]) => w.Keep.q.push([m, args]);
       });
       const script = document.createElement("script");
