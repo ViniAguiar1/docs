@@ -1,0 +1,67 @@
+---
+title: "Multiple workspaces"
+description: "Work in several companies with one Keep login. Each workspace has its own data, team, plan and permissions."
+---
+
+A **workspace** is one company in Keep: its customers, integrations, surveys, updates, issues, playbooks, team and subscription. One person can belong to several workspaces with the same login and switch between them at any time.
+
+## Switching
+
+The workspace switcher sits at the top of the sidebar. It shows the current workspace with its plan and your role there. Open it to:
+
+- switch to another workspace,
+- **Create workspace**,
+- **Manage workspaces**.
+
+Switching always lands on the workspace's overview. A page from the previous workspace, such as an account or an issue, does not exist in the next one.
+
+Keep remembers the workspace you picked in this browser. If you lose access to it, for example because you were removed, Keep opens another workspace you belong to.
+
+## Everything is per workspace
+
+| | Per workspace |
+|---|---|
+| Customers, Customer 360, revenue, risk, recovery | ✓ |
+| Integrations and API keys | ✓ |
+| Surveys, responses, What's new | ✓ |
+| Issues, playbooks, account owners | ✓ |
+| Team, invitations, team activity | ✓ |
+| Plan, subscription and team limit | ✓ |
+| Agent conversations | ✓ |
+| Your role (owner, admin or member) | ✓ |
+
+Your role belongs to your membership in each workspace. You can be the **owner** of your own workspace and a **member** of someone else's: billing opens in the first and not in the second.
+
+The database enforces the separation, not only the app. Every request carries the workspace you are working in, and Postgres checks that you are an active member of it before returning or accepting any row.
+
+## Creating a workspace
+
+1. Open the switcher and click **Create workspace**, or go to **Settings → Workspaces**.
+2. Choose a name and a URL name (lowercase letters, numbers and hyphens, unique across Keep).
+3. Keep takes you through setup for the new workspace: connect its revenue and choose its plan. The checkout creates a subscription for **this workspace only**.
+
+| Plan | Price | Monitored MRR | Team members |
+|---|---|---|---|
+| Starter | $39/month | up to $10k | up to 3 |
+| Pro | $119/month | up to $50k | up to 5 |
+| Business | $249/month | up to $200k | up to 10 |
+
+Nothing is charged until you pick a plan. You can have up to three workspaces without a plan at a time.
+
+## Invitations
+
+An invitation adds you to one more workspace. It never creates a second account, and it doesn't affect your other workspaces. If you sign in without clicking the invitation link, Keep lists the invitations waiting for your address on the "create a workspace" screen.
+
+## Leaving and removal
+
+- **Leave** a workspace from **Settings → Workspaces** or from the bottom of the Team page. You lose access to that workspace only.
+- An owner cannot leave their own workspace.
+- If someone removes you, you lose that workspace only. Your account, your other workspaces and their subscriptions are untouched.
+
+## Workspace settings
+
+**Settings → Workspace** shows the current workspace's name, URL name, plan, subscription status, team size, your role and the date it was created. The owner and admins can rename it.
+
+## Deleting your account
+
+Deleting your account deletes every workspace you **own**, with their data, and cancels their subscriptions. In workspaces where you are only a member, you are simply removed.

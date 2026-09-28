@@ -20,7 +20,8 @@
       {
         "group": "Workspace",
         "pages": [
-          "workspace/team"
+          "workspace/team",
+          "workspace/workspaces"
         ]
       },
       {
