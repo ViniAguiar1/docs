@@ -1,0 +1,70 @@
+---
+title: "Team members"
+description: "Invite your team to a Keep workspace, choose what each person can do, and give every customer account an owner."
+---
+
+A Keep workspace can hold several people. Everyone works on the same data: the same accounts, alerts, issues, playbooks, surveys and updates. Each person signs in with their own login.
+
+## Roles
+
+There are three fixed roles.
+
+| | Owner | Admin | Member |
+|---|:---:|:---:|:---:|
+| Accounts, issues, playbooks, recovery | ✓ | ✓ | ✓ |
+| Surveys and What's new | ✓ | ✓ | ✓ |
+| Assign account owners | ✓ | ✓ | ✓ |
+| Invite and remove people | ✓ | Members only | — |
+| Change roles | ✓ | — | — |
+| Integrations and API keys | ✓ | ✓ | — |
+| Alert settings, feedback identity secret | ✓ | ✓ | — |
+| Billing and plan | ✓ | — | — |
+| Export the workspace's data | ✓ | — | — |
+
+- The **owner** is the account that created the workspace and pays for it. A workspace has exactly one owner, and nobody can change or remove them.
+- An **admin** runs the workspace. Admins cannot touch billing, and cannot change or remove the owner or another admin.
+- A **member** works the accounts. Members can see the settings and integrations but cannot change them.
+
+The server checks every permission, and the database enforces the same rules. Hiding a button is only there for convenience; it is not what protects the data.
+
+## How many people
+
+| Plan | Team members |
+|---|---|
+| Starter | Up to 3 |
+| Pro | Up to 5 |
+| Business | Up to 10 |
+
+The count includes the owner and any invitations that are still open. The plan price does not change with the team size, because there is no per-seat billing.
+
+When a workspace is at its limit, **Invite member** is disabled and the page links to the plans. After a downgrade, nobody is removed. Everyone already in the workspace keeps access, and new invitations open up once the team fits the plan again.
+
+## Inviting someone
+
+1. Go to **Settings → Team** (**Team** in the sidebar).
+2. Click **Invite member**, enter the email address and pick a role.
+3. The person gets an email with a link. The link works for 7 days.
+
+To accept, the person signs in with **the same email address** the invitation was sent to. A forwarded link does not work for anyone else. If the email does not arrive, Keep gives you the link to copy and send another way.
+
+You can **resend** an invitation (this issues a new link and restarts the 7 days) or **revoke** it (this frees its seat).
+
+<Note>
+Each person works in one workspace. Someone who already pays for their own Keep workspace has to cancel that subscription before joining another one.
+</Note>
+
+## Removing someone
+
+An owner or admin can remove a person from the menu next to their name. Admins can only remove members. Removal is immediate. The accounts that person owned become **Unassigned**, and everything they did stays in the workspace: issues, notes, playbook runs and history.
+
+An admin or member can also leave on their own, from the bottom of the Team page.
+
+## Account owners
+
+Every customer account can have an owner from the team. Set it in the **Owner** column of **Accounts**, or at the top of the account's page. An account without an owner shows **Unassigned**.
+
+Only active members of the workspace can be picked. Each change (assigned, reassigned, unassigned, or unassigned because the owner left) appears in the account's **Activity**.
+
+## Team activity
+
+The Team page lists who was invited, who joined, role changes and removals, with who did each one and when.
