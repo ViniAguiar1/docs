@@ -1,0 +1,211 @@
+---
+title: "Survey widget"
+description: "Show Keep surveys inside your product, and see each answer next to the account, its revenue and its risk."
+---
+
+You create the survey in Keep (**Feedback → Surveys**), publish it, and install
+the widget in your app. When someone answers, the answer reaches Keep and shows
+up next to the account it came from — MRR, renewal, risk and usage, read from
+your integrations when you look, never sent to the browser.
+
+Keep shows these side by side: *"the account is at risk and gave a 3"*. It never
+claims one caused the other.
+
+## Survey models
+
+| Model | Scale | Headline |
+| --- | --- | --- |
+| **NPS** | 0–10 | % promoters (9–10) − % detractors (0–6). Passives (7–8) count in neither. |
+| **CSAT** | 1–5 | Share of 4s and 5s. |
+| **CES** | 1–7 | Average. |
+| **Custom** | Your own, from 0 or 1 up to 10 | Average. |
+
+Every model can ask an optional follow-up question after the score.
+
+## Install
+
+Paste this in the pages where the survey may appear:
+
+```html
+<script>
+  (function(w){w.Keep=w.Keep||{q:[]};["init","identify","show","track","reset"].forEach(function(m){w.Keep[m]=w.Keep[m]||function(){w.Keep.q.push([m,arguments])}})})(window);
+</script>
+<script async src="https://usekeep.dev/sdk/v1/keep.js"></script>
+<script>
+  Keep.init({ surveyId: "YOUR_SURVEY_ID" });
+</script>
+```
+
+The script loads asynchronously and never blocks your page. Calls made before
+it loads are queued and run when it arrives. It is about 8 KB gzipped.
+
+<Note>
+  The widget draws inside a Shadow DOM: your app's CSS does not affect the
+  survey, and the survey's CSS does not leak into your app. It works under a
+  Content Security Policy without `'unsafe-inline'` in `style-src` — allow only
+  `https://usekeep.dev` in `script-src` and `connect-src`.
+</Note>
+
+## Methods
+
+<ParamField path="Keep.init(options)" type="function">
+  `surveyId` (or `surveys: ["…", "…"]`) — the surveys this page may show.
+  `debug: true` logs to the console why a survey did not appear.
+</ParamField>
+
+<ParamField path="Keep.identify(user)" type="function">
+  Who is using your app. Every field is optional: `userId`, `email`,
+  `companyId`, `customerId` (the customer's id in your billing, like Stripe's
+  `cus_…` — it makes the match to the account exact), `plan`, `createdAt`
+  (ISO 8601, for "new users" targeting) and `signature` (see below).
+</ParamField>
+
+<ParamField path="Keep.show(surveyId)" type="function">
+  Show it now. Used by the **Manual (SDK)** trigger, and any time you want.
+</ParamField>
+
+<ParamField path="Keep.track(event)" type="function">
+  Fires the **Custom event** trigger: `Keep.track("checkout_completed")` shows
+  the surveys set up for that event.
+</ParamField>
+
+<ParamField path="Keep.reset()" type="function">
+  Forgets the user. Call it on logout.
+</ParamField>
+
+## Triggers and audience
+
+Triggers: right away, after N seconds, after N page views, manually via
+`Keep.show`, or on a custom event via `Keep.track`.
+
+Audience: everyone, identified users only, new users (signed up in the last N
+days), specific plans, or specific companies. Plan and company are the values
+your app passes to `Keep.identify`. The audience is evaluated on Keep's server,
+which answers only "show" or "don't show" — the list of plans or companies
+never reaches the browser.
+
+After someone answers or closes the survey, it is not shown to them again for
+the number of days you set (90 by default).
+
+## Verified identity
+
+Anything the browser sends can be typed by anyone, so identity has two layers:
+
+- **Unsigned:** the answer is stored with what your app said and marked
+  *not verified* in Keep.
+- **Signed:** your **server** signs the user with the identity secret
+  (**Feedback → Settings**). The answer arrives verified.
+
+The signature is the HMAC-SHA256, in hex, of the `userId` — or of the `email`
+when there is no `userId`:
+
+<CodeGroup>
+
+```js Node
+import { createHmac } from "node:crypto";
+
+const signature = createHmac("sha256", process.env.KEEP_IDENTITY_SECRET)
+  .update(user.id)
+  .digest("hex");
+```
+
+```python Python
+import hmac, hashlib, os
+
+signature = hmac.new(
+    os.environ["KEEP_IDENTITY_SECRET"].encode(),
+    user.id.encode(),
+    hashlib.sha256,
+).hexdigest()
+```
+
+</CodeGroup>
+
+```js
+Keep.identify({ userId: "123", email: "john@acme.com", signature: "<from your server>" });
+```
+
+With **Require verified identity** on, answers without a valid signature are
+stored as anonymous. The secret must never reach the browser.
+
+## How an answer is linked to an account
+
+Strongest first:
+
+1. The `customerId` your app passed, matched exactly to a customer in your
+   billing.
+2. The respondent's email, matched exactly to the account's email.
+3. The company domain of the respondent's email, when exactly one account has
+   it — and never a public mailbox like gmail.com.
+
+Answers that match nothing are kept and shown as *customer not identified*.
+
+## React and Next.js
+
+```tsx
+"use client";
+
+import { useEffect } from "react";
+
+export function KeepFeedback({ user }: { user: { id: string; email: string; signature: string } }) {
+  useEffect(() => {
+    const w = window as any;
+    if (!w.Keep) {
+      w.Keep = { q: [] };
+      ["init", "identify", "show", "track", "reset"].forEach((m) => {
+        w.Keep[m] = (...args: unknown[]) => w.Keep.q.push([m, args]);
+      });
+      const script = document.createElement("script");
+      script.src = "https://usekeep.dev/sdk/v1/keep.js";
+      script.async = true;
+      document.head.appendChild(script);
+      w.Keep.init({ surveyId: "YOUR_SURVEY_ID" });
+    }
+    w.Keep.identify({ userId: user.id, email: user.email, signature: user.signature });
+  }, [user.id, user.email, user.signature]);
+
+  return null;
+}
+```
+
+## Inline surveys
+
+With the **Inline** display, place where it should appear:
+
+```html
+<div data-keep-survey="YOUR_SURVEY_ID"></div>
+```
+
+## What the widget receives and sends
+
+- It receives only what it needs to draw the survey: texts, scale, look and
+  trigger. Nothing about your accounts, revenue, risk or audience.
+- It sends the score, the comment, the identity you passed, and the page path —
+  **without** the query string, which is where tokens tend to live.
+- It uses no cookies. It keeps in `localStorage` only that someone answered or
+  closed, so it does not ask again too soon.
+- Any failure is silent: a paused or deleted survey, a network error — your
+  page stays as it was.
+- Survey texts are always rendered as text, never as HTML.
+
+## Endpoints
+
+Used by the widget; you do not need to call them.
+
+| Method | Path | What for |
+| --- | --- | --- |
+| `GET` | `/api/v1/surveys/:id/config` | What to draw. `404` for a draft, paused, archived or unknown survey. |
+| `POST` | `/api/v1/surveys/:id/eligibility` | Whether this person is in the audience and has not answered recently. |
+| `POST` | `/api/v1/surveys/:id/responses` | One answer. The same `submissionId` twice is one answer. |
+| `POST` | `/api/v1/surveys/:id/displays` | Counts a display, for the response rate. |
+
+Limits: a whole score on the survey's scale, a comment of up to 2,000
+characters, and 10 answers per hour per survey per address. With **Allowed
+sites** set in Feedback → Settings, requests from other origins are refused.
+Pausing a survey takes up to a minute to reach every page, because the
+configuration is cached briefly.
+
+## Testing locally
+
+Use `Keep.init({ surveyId, debug: true })`. The builder's preview in Keep uses
+this exact widget and never sends answers.

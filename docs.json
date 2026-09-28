@@ -18,6 +18,12 @@
         ]
       },
       {
+        "group": "Feedback",
+        "pages": [
+          "feedback/widget"
+        ]
+      },
+      {
         "group": "Reference",
         "pages": [
           "api-reference/activity",
