@@ -25,6 +25,12 @@
         ]
       },
       {
+        "group": "Integrations",
+        "pages": [
+          "integrations/notion"
+        ]
+      },
+      {
         "group": "Feedback and updates",
         "pages": [
           "feedback/widget",
