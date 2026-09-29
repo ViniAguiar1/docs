@@ -1,0 +1,74 @@
+---
+title: "Notion"
+description: "Sync your Keep customers to a Notion database: MRR, risk, renewal, owner and more, kept up to date."
+---
+
+Keep writes your customers into a Notion database and keeps them up to date. It's a good fit for teams that run customer success in Notion.
+
+- **One way:** Keep is the source of truth. Changes you make in Notion are not read back into Keep.
+- **Per workspace:** the connection belongs to the Keep workspace you are in. Another workspace you belong to has its own connection, or none.
+
+## Connect
+
+1. Go to **Integrations → Notion** and click **Connect Notion**. Only the workspace owner or an admin can do this.
+2. In Notion, pick the pages and databases Keep may access, including the database that will receive your customers.
+3. Back in Keep, choose the database, map the fields and start the sync.
+
+Keep only sees what you shared when connecting. To use another database, reconnect Notion and select it.
+
+## Fields
+
+Map each Keep field to a property of a compatible type. The setup screen lists only the compatible properties for each field, and refuses anything else.
+
+| Keep field | Notion property types |
+|---|---|
+| Customer name (required) | Title, Text |
+| Keep customer ID | Text, Title |
+| Email | Email, Text |
+| Keep link (opens Customer 360) | URL |
+| MRR | Number |
+| Currency | Select, Text |
+| Status (Active / Canceled) | Select, Text |
+| Risk (None, Low, Medium, High, Urgent) | Select, Text |
+| Risk reason | Text |
+| Renewal date | Date |
+| Last activity | Date |
+| Usage (events in the last 30 days) | Number |
+| NPS (latest answer) | Number |
+| Owner (team member) | Text, Select |
+
+Keep never creates or changes properties in your database. If a field has no compatible property, add one in Notion and it appears in the list.
+
+Labels such as status and risk are written in your workspace's alert language.
+
+## How syncing works
+
+- **New customers** become new pages. Keep remembers which page belongs to which customer, so a sync never creates duplicates.
+- **Existing pages** are updated only when something changed, such as MRR, risk, NPS, status or renewal.
+- **Customers who stop paying:** their page is updated to Canceled with MRR 0. It is never deleted.
+- **Deleted pages:** if you delete a customer's page in Notion, Keep creates a new one the next time that customer changes.
+- **When it runs:** Keep syncs automatically once a day. You can also click **Sync now** at any time.
+- **Report:** the last sync shows how many pages were created, updated, unchanged and failed.
+
+Keep respects Notion's request limits. A large first sync that runs out of time continues where it stopped on the next run.
+
+## Permissions
+
+| | Owner | Admin | Member |
+|---|:---:|:---:|:---:|
+| See the connection, database and mapping | ✓ | ✓ | ✓ |
+| Connect, configure, sync now, disconnect | ✓ | ✓ | — |
+
+## Disconnect
+
+**Disconnect** stops Keep from syncing to Notion.
+
+- Pages already in your database stay as they are, and your data in Keep does not change.
+- If you reconnect later and choose the same database, Keep updates the same pages.
+- To also remove Keep's access on Notion's side, open **Settings → Connections** in Notion.
+
+## Security
+
+- Notion's access token is stored encrypted and never leaves Keep's servers. It is never shown in the app or included in logs.
+- Every Notion action checks your role in the current workspace, on the server.
+- A workspace can never read or use another workspace's connection, even when the same person belongs to both.
